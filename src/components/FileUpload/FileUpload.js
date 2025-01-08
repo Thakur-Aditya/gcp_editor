@@ -2,7 +2,7 @@
 'use client';
 import { useState } from 'react';
 
-export default function FileUpload() {
+export default function FileUpload({ onPointsLoaded }) {
   const [file, setFile] = useState(null);
   const [error, setError] = useState('');
 
@@ -10,7 +10,6 @@ export default function FileUpload() {
     const selectedFile = event.target.files[0];
     setError('');
 
-    // Check file type
     if (selectedFile) {
       const fileType = selectedFile.name.split('.').pop().toLowerCase();
       if (fileType !== 'csv' && fileType !== 'txt') {
@@ -22,6 +21,26 @@ export default function FileUpload() {
     }
   };
 
+  const parseCSV = (text) => {
+    const lines = text.trim().split('\n');
+    // Skip header if exists
+    const startIndex = lines[0].toLowerCase().includes('latitude') ? 1 : 0;
+    
+    return lines.slice(startIndex).map(line => {
+      const [latitude, longitude, elevation = 0] = line.split(',').map(val => parseFloat(val.trim()));
+      
+      if (isNaN(latitude) || isNaN(longitude)) {
+        throw new Error('Invalid data format');
+      }
+
+      return {
+        latitude,
+        longitude,
+        elevation: isNaN(elevation) ? 0 : elevation
+      };
+    });
+  };
+
   const handleUpload = async () => {
     if (!file) {
       setError('Please select a file first');
@@ -29,16 +48,13 @@ export default function FileUpload() {
     }
 
     try {
-      // Read file content
       const text = await file.text();
-      console.log('File content:', text); // For now, just logging
-      
-      // Here we'll add processing logic later
-      
-      // Clear file after upload
+      console.log(text);
+      const points = parseCSV(text);
+      onPointsLoaded(points);
       setFile(null);
     } catch (err) {
-      setError('Error processing file');
+      setError('Error processing file. Please check the file format.');
       console.error(err);
     }
   };
