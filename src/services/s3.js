@@ -12,7 +12,7 @@ export const uploadToS3 = async (file, fileName) => {
         Key: `drone-images/${fileName}`,
         Body: file,
         ContentType: file.type,
-        ACL: 'public-read'
+        // ACL: 'public-read'
     };
 
     try {
