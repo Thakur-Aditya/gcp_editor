@@ -26,11 +26,7 @@ export const createQueue = () => {
     throw new Error("Redis URL not configured");
   }
 
-  const options =
-    process.env.NEXT_PUBLIC_NODE_ENV === "production"
-      ? productionOptions
-      : developmentOptions;
-
+  const options = productionOptions;
   return new Queue("imageProcessing", REDIS_URL, {
     ...options,
     defaultJobOptions: {
